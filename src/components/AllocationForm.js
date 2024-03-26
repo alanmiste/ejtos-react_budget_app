@@ -1,34 +1,45 @@
 import React, { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
 
-const AllocationForm = (props) => {
-  const { dispatch, remaining } = useContext(AppContext);
+const ItemSelected = (props) => {
+  const { Currency, Budget, expenses, dispatch } = useContext(AppContext);
 
   const [name, setName] = useState("");
-  const [cost, setCost] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [action, setAction] = useState("");
 
   const submitEvent = () => {
-    if (cost > remaining) {
-      alert("The value cannot exceed remaining funds  £" + remaining);
-      setCost("");
-      return;
-    }
+    if (/^[0-9\b]+$/.test(quantity)) {
+      const totalExpenses = expenses.reduce((total, item) => {
+        return (total += item.allocatedBoudget);
+      }, 0);
 
-    const expense = {
-      name: name,
-      cost: parseInt(cost),
-    };
-    if (action === "Reduce") {
-      dispatch({
-        type: "RED_EXPENSE",
-        payload: expense,
-      });
+      const reminded = parseInt(Budget) - totalExpenses;
+
+      if (quantity <= reminded) {
+        const item = {
+          name: name,
+          quantity: parseInt(quantity),
+        };
+
+        if (action === "Reduce") {
+          dispatch({
+            type: "RED_QUANTITY",
+            payload: item,
+          });
+        } else {
+          dispatch({
+            type: "ADD_QUANTITY",
+            payload: item,
+          });
+        }
+      } else {
+        alert(
+          `The value can not exceed remaning funds ${Currency}${reminded}!`
+        );
+      }
     } else {
-      dispatch({
-        type: "ADD_EXPENSE",
-        payload: expense,
-      });
+      alert("The field accept only numbers value!");
     }
   };
 
@@ -47,24 +58,20 @@ const AllocationForm = (props) => {
             onChange={(event) => setName(event.target.value)}
           >
             <option defaultValue>Choose...</option>
-            <option value="Marketing" name="marketing">
-              {" "}
+            <option value="Marketing" name="Marketing">
               Marketing
             </option>
-            <option value="Sales" name="sales">
-              Sales
-            </option>
-            <option value="Finance" name="finance">
+            <option value="Finance" name="Finance">
               Finance
             </option>
-            <option value="HR" name="hr">
-              HR
+            <option value="Sales" name="Sales">
+              Sales
             </option>
-            <option value="IT" name="it">
+            <option value="Human Resource" name="Human Resource">
+              Human Resource
+            </option>
+            <option value="IT" name="IT">
               IT
-            </option>
-            <option value="Admin" name="admin">
-              Admin
             </option>
           </select>
 
@@ -81,19 +88,23 @@ const AllocationForm = (props) => {
             <option defaultValue value="Add" name="Add">
               Add
             </option>
-            <option value="Reduce" name="Reduce">
+            <option option value="Reduce" name="Reduce">
               Reduce
             </option>
           </select>
-
+          <span
+            className="eco"
+            style={{ marginLeft: "2rem", marginRight: "8px" }}
+          ></span>
+          <span>{Currency}</span>
           <input
             required="required"
             type="number"
-            pattern="[0-9]"
-            id="cost"
-            value={cost}
-            style={{ marginLeft: "2rem", size: 10 }}
-            onChange={(event) => setCost(event.target.value)}
+            id="quantity"
+            min="0"
+            value={quantity}
+            style={{ size: 10 }}
+            onChange={(event) => setQuantity(event.target.value)}
           ></input>
 
           <button
@@ -109,4 +120,4 @@ const AllocationForm = (props) => {
   );
 };
 
-export default AllocationForm;
+export default ItemSelected;
